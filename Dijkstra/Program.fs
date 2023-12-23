@@ -81,6 +81,8 @@ let ``Dijkstra test`` () =
 let main argv = 
     dijkstra exampleEdges startNode |> printfn "Dijstra %A"
     dijkstra romeEdges ({Id = 0}) |> printfn "Dijstra Rome %A"
+    for edge in (dijkstra romeEdges {Id = 0}) do
+        printfn "%A" edge
     0 
 
 
