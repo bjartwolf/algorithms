@@ -28,8 +28,8 @@ let ``PriorityQueue test with distanceNodes `` (x: DistanceNode)
                                                (y: DistanceNode)
                                                (z: DistanceNode) = 
     let pq = PriorityQueue.empty false 
-             |> PriorityQueue.insert y 
-             |> PriorityQueue.insert x
+             |> PriorityQueue.insert x 
+             |> PriorityQueue.insert y
              |> PriorityQueue.insert z
     let ((firstD, _),a) = PriorityQueue.pop pq
     let ((sndD,_),b) = PriorityQueue.pop a 
@@ -56,9 +56,8 @@ let dijkstra e n =
                 let closerNeighbors = e |> Set.filter (fun edge -> edge.Source = currentNode)
                                         |> Set.map (fun edge -> currentDistance + edge.Weight, edge.Target)
                                         |> Set.filter (fun dn -> closerOrUndiscovered explored dn) 
-                innerDijkstra (closerNeighbors |> updateFrontier restOfFrontier)  (closerNeighbors |> updateDiscovered explored)
-   let pq = PriorityQueue.empty false 
-            |> PriorityQueue.insert (0, n)
+                innerDijkstra (closerNeighbors |> updateFrontier restOfFrontier) (closerNeighbors |> updateDiscovered explored)
+   let pq = PriorityQueue.empty false |> PriorityQueue.insert (0, n)
    innerDijkstra pq (Map.ofList [n, 0]) 
 
 let startNode = {Id = 1}
