@@ -36,8 +36,6 @@ let ``PriorityQueue test with distanceNodes `` (x: DistanceNode)
     let ((thirdD, _),_) = PriorityQueue.pop b 
     firstD <= sndD && sndD <= thirdD
 
-let startNode = {Id = 1}
-
 let updateMap (originalMap: Map<Node,int>) (updates: DistanceNode Set) :Map<Node,int> =
     updates |> Set.fold (fun accMap (key,value) -> Map.add value key accMap) originalMap
 
@@ -49,6 +47,7 @@ let closerOrUndiscovered (explored: Map<Node,int>) ((dist,n):DistanceNode) : boo
         | Some existingDist -> dist < existingDist
         | None -> true
 
+[<TailCall>]
 let dijkstra (e: Edges) (start: Node) : Map<Node, int> =
    let rec innerDijkstra (frontier: IPriorityQueue<DistanceNode>) (explored : Map<Node,int>) = 
         match (PriorityQueue.tryPop frontier) with
@@ -62,6 +61,16 @@ let dijkstra (e: Edges) (start: Node) : Map<Node, int> =
             |> PriorityQueue.insert (0, start)
    innerDijkstra pq (Map.empty |> Map.add start 0) 
 
+let startNode = {Id = 1}
+
+let romeData = System.IO.File.ReadAllLines("rome99.txt")
+let vertexCount = int romeData.[0]
+let edgeCount = int romeData.[1]
+let romeEdges = romeData.[2..]
+                    |> Array.map (fun line -> line.Split(' '))
+                    |> Array.map (fun line -> { Source = {Id = int line.[0]}; Target = {Id = int line.[1]}; Weight = int line.[2] })
+                    |> Set.ofArray
+               
 [<Xunit.Fact>]
 let ``Dijkstra test`` () = 
     let result = dijkstra exampleEdges startNode
@@ -71,6 +80,7 @@ let ``Dijkstra test`` () =
 [<EntryPoint>]
 let main argv = 
     dijkstra exampleEdges startNode |> printfn "Dijstra %A"
+    dijkstra romeEdges ({Id = 0}) |> printfn "Dijstra Rome %A"
     0 
 
 
