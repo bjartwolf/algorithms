@@ -36,20 +36,20 @@ let ``PriorityQueue test with distanceNodes `` (x: DistanceNode)
     let ((thirdD, _),_) = PriorityQueue.pop b 
     firstD <= sndD && sndD <= thirdD
 
-let updateDiscovered (originalMap: Map<Node,int>) (updates: DistanceNode Set) :Map<Node,int> =
+let updateDiscovered originalMap updates =  
     updates |> Set.fold (fun accMap (key,value) -> Map.add value key accMap) originalMap
 
-let updateFrontier (stack: IPriorityQueue<DistanceNode>) (updates: DistanceNode Set): IPriorityQueue<DistanceNode>  =
+let updateFrontier stack updates =  
     updates |> Set.fold (fun q dn -> PriorityQueue.insert dn q) stack 
 
-let closerOrUndiscovered (explored: Map<Node,int>) ((dist,n):DistanceNode) : bool = 
+let closerOrUndiscovered explored ((dist,n):DistanceNode) = 
     match Map.tryFind n explored with
         | Some existingDist -> dist < existingDist
         | None -> true
 
 [<TailCall>]
-let dijkstra (e: Edges) (start: Node) : Map<Node, int> =
-   let rec innerDijkstra (frontier: IPriorityQueue<DistanceNode>) (explored : Map<Node,int>) = 
+let dijkstra e n =  
+   let rec innerDijkstra frontier explored =  
         match (PriorityQueue.tryPop frontier) with
             | None  -> explored 
             | Some ((currentDistance,currentNode), restOfFrontier) ->  
@@ -58,8 +58,8 @@ let dijkstra (e: Edges) (start: Node) : Map<Node, int> =
                                         |> Set.filter (fun dn -> closerOrUndiscovered explored dn) 
                 innerDijkstra (closerNeighbors |> updateFrontier restOfFrontier)  (closerNeighbors |> updateDiscovered explored)
    let pq = PriorityQueue.empty false 
-            |> PriorityQueue.insert (0, start)
-   innerDijkstra pq (Map.empty |> Map.add start 0) 
+            |> PriorityQueue.insert (0, n)
+   innerDijkstra pq (Map.ofList [n, 0]) 
 
 let startNode = {Id = 1}
 
