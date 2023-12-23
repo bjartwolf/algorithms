@@ -52,7 +52,7 @@ let closerOrUndiscovered (explored: Map<Node,int>) ((dist,n):DistanceNode) : boo
 let dijkstra (e: Edges) (start: Node) : Map<Node, int> =
    let rec innerDijkstra (frontier: IPriorityQueue<DistanceNode>) (explored : Map<Node,int>) = 
         match (PriorityQueue.tryPop frontier) with
-            | None _  -> explored 
+            | None  -> explored 
             | Some ((currentDistance,currentNode),remainingFrontier) ->  
                 let closerNeighbors = e |> Set.filter (fun edge -> edge.Source = currentNode)
                                         |> Set.map (fun edge -> currentDistance + edge.Weight, edge.Target)
