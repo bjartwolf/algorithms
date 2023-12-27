@@ -70,16 +70,16 @@ let relax (d_u: int) explored vs =
 // Ε is the set of all edges in the Graph.
 [<TailCall>]
 let dijkstra Ε s =  
-   let rec innerDijkstra R d' =  
+   let rec dijkstra_rec R d' =  
         match (PQ.tryPop R) with
             | None  -> d' 
             | Some ((d_u,u), R') ->  
                 let relaxed: d_Node Set = adjacent u Ε 
                                             |> relax d_u d' 
-                innerDijkstra (updatePQWithSet R' relaxed) 
-                              (updateMapWithSet d' relaxed)
+                dijkstra_rec (updatePQWithSet R' relaxed) 
+                             (updateMapWithSet d' relaxed)
    let pq = PQ.empty false |> PQ.insert (0, s)
-   innerDijkstra pq (Map.ofList [s, 0]) 
+   dijkstra_rec pq (Map.ofList [s, 0]) 
 
 let s = {n = 1}
 
