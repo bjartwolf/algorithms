@@ -23,6 +23,8 @@ let exampleEdges = Set.ofList [ { u = {n = 1}; v = {n = 2}; ω_uv = 7 };
                                 { u = {n = 4}; v = {n = 5}; ω_uv = 6 }; 
                                 { u = {n = 5}; v = {n = 6}; ω_uv = 9 } ]
 
+// https://fsharpforfunandprofit.com/posts/convenience-types/#most-f-types-are-automatically-comparable 
+// By adding the distance that I want to compare on first, it is possible to use the default comparison operator
 type d_Node = int * Node
 
 [<Property>]
