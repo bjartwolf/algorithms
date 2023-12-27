@@ -52,22 +52,22 @@ let closerOrUndiscovered explored ((dist,n):DistanceNode) =
 let adjacent u e = 
     e |> Set.filter (fun edge -> edge.u = u)
 
-let relax adjacent (d_u: int) explored = 
-    adjacent 
-      |> Set.map (fun u_v -> d_u + u_v.ω_uv, u_v.v)
+let relax (d_u: int) explored vs = 
+    vs 
+      |> Set.map (fun v -> d_u + v.ω_uv, v.v)
       |> Set.filter (fun dn -> closerOrUndiscovered explored dn) 
 
 //https://web.engr.oregonstate.edu/~glencora/wiki/uploads/dijkstra-proof.pdf
 
 [<TailCall>]
 let dijkstra edges n =  
-   let rec innerDijkstra R explored =  
-        match (PQ.tryPop R) with
+   let rec innerDijkstra Q explored =  
+        match (PQ.tryPop Q) with
             | None  -> explored 
-            | Some ((d_u,u), R') ->  
-                let adjacent = adjacent u edges
-                let relaxed = relax adjacent d_u explored
-                innerDijkstra (updateFrontier R' relaxed) 
+            | Some ((d_u,u), Q') ->  
+                let relaxed = adjacent u edges 
+                                |> relax d_u explored 
+                innerDijkstra (updateFrontier Q' relaxed) 
                               (updateDiscovered explored relaxed)
    let pq = PQ.empty false |> PQ.insert (0, n)
    innerDijkstra pq (Map.ofList [n, 0]) 
