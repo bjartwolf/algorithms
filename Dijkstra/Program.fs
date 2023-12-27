@@ -73,7 +73,7 @@ let dijkstra edges n =
    let pq = PQ.empty false |> PQ.insert (0, n)
    innerDijkstra pq (Map.ofList [n, 0]) 
 
-let startNode = {n = 1}
+let s = {n = 1}
 
 let romeData = System.IO.File.ReadAllLines("rome99.txt")
 let vertexCount = int romeData.[0]
@@ -85,13 +85,13 @@ let romeEdges = romeData.[2..]
                
 [<Xunit.Fact>]
 let ``Dijkstra test`` () = 
-    let result = dijkstra exampleEdges startNode
+    let result = dijkstra exampleEdges s
     let expected = Map.ofList [ ({n = 1}, 0); ({n = 2}, 7); ({n = 3}, 9); ({n = 4}, 20); ({n = 5}, 26); ({n = 6}, 11) ]
     Xunit.Assert.Equal<Map<Node,int>>(expected, result)
 
 [<EntryPoint>]
 let main argv = 
-    dijkstra exampleEdges startNode |> printfn "Dijstra %A"
+    dijkstra exampleEdges s |> printfn "Dijstra %A"
     dijkstra romeEdges ({n = 0}) |> printfn "Dijstra Rome %A"
     for edge in (dijkstra romeEdges {n = 0}) do
         printfn "%A" edge
