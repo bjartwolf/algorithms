@@ -38,12 +38,11 @@ let ``PriorityQueue test with distanceNodes `` (x: d_Node)
     let ((thirdD, _),_) = PQ.pop b 
     firstD <= sndD && sndD <= thirdD
 
-let updateExplored explored updates =  
-    updates |> Set.fold (fun accMap (key,value) -> Map.add value key accMap) explored
+let updateMapWithSet map updates =  
+    updates |> Set.fold (fun accMap (key,value) -> Map.add value key accMap) map
 
-let updateQ Q updates =  
-    updates |> Set.fold (fun q dn -> PQ.insert dn q) Q 
-
+let updatePQWithSet Q updates =  
+    updates |> Set.fold (fun q element -> PQ.insert element q) Q 
 
 let adjacent u e = 
     e |> Set.filter (fun edge -> edge.u = u)
@@ -67,8 +66,8 @@ let dijkstra edges n =
             | Some ((d_u,u), Q') ->  
                 let relaxed: d_Node Set = adjacent u edges 
                                             |> relax d_u explored 
-                innerDijkstra (updateQ Q' relaxed) 
-                              (updateExplored explored relaxed)
+                innerDijkstra (updatePQWithSet Q' relaxed) 
+                              (updateMapWithSet explored relaxed)
    let pq = PQ.empty false |> PQ.insert (0, n)
    innerDijkstra pq (Map.ofList [n, 0]) 
 
