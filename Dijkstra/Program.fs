@@ -5,21 +5,23 @@ open FSharpx.Collections
 type Node = { Id : int}
 type Nodes = Node Set
 
+module PQ = PriorityQueue
+
 type Edge = { 
     u : Node;
     v : Node;
-    w_u_v : int;
+    ω_u_v : int;
 }
 type Edges = Edge Set
 let exampleNodes = Set.ofList [ {Id = 1}; {Id = 2}; {Id = 3}; {Id = 4}; {Id = 5}; {Id = 6} ]
-let exampleEdges = Set.ofList [ { u = {Id = 1}; v = {Id = 2}; w_u_v = 7 }; 
-                                { u = {Id = 1}; v = {Id = 3}; w_u_v = 9 }; 
-                                { u = {Id = 2}; v = {Id = 3}; w_u_v = 10 }; 
-                                { u = {Id = 2}; v = {Id = 4}; w_u_v = 15 }; 
-                                { u = {Id = 3}; v = {Id = 4}; w_u_v = 11 }; 
-                                { u = {Id = 3}; v = {Id = 6}; w_u_v = 2 }; 
-                                { u = {Id = 4}; v = {Id = 5}; w_u_v = 6 }; 
-                                { u = {Id = 5}; v = {Id = 6}; w_u_v = 9 } ]
+let exampleEdges = Set.ofList [ { u = {Id = 1}; v = {Id = 2}; ω_u_v = 7 }; 
+                                { u = {Id = 1}; v = {Id = 3}; ω_u_v = 9 }; 
+                                { u = {Id = 2}; v = {Id = 3}; ω_u_v = 10 }; 
+                                { u = {Id = 2}; v = {Id = 4}; ω_u_v = 15 }; 
+                                { u = {Id = 3}; v = {Id = 4}; ω_u_v = 11 }; 
+                                { u = {Id = 3}; v = {Id = 6}; ω_u_v = 2 }; 
+                                { u = {Id = 4}; v = {Id = 5}; ω_u_v = 6 }; 
+                                { u = {Id = 5}; v = {Id = 6}; ω_u_v = 9 } ]
 
 type DistanceNode = int * Node
 
@@ -27,20 +29,20 @@ type DistanceNode = int * Node
 let ``PriorityQueue test with distanceNodes `` (x: DistanceNode)
                                                (y: DistanceNode)
                                                (z: DistanceNode) = 
-    let pq = PriorityQueue.empty false 
-             |> PriorityQueue.insert x 
-             |> PriorityQueue.insert y
-             |> PriorityQueue.insert z
-    let ((firstD, _),a) = PriorityQueue.pop pq
-    let ((sndD,_),b) = PriorityQueue.pop a 
-    let ((thirdD, _),_) = PriorityQueue.pop b 
+    let pq = PQ.empty false 
+             |> PQ.insert x 
+             |> PQ.insert y
+             |> PQ.insert z
+    let ((firstD, _),a) = PQ.pop pq
+    let ((sndD,_),b) = PQ.pop a 
+    let ((thirdD, _),_) = PQ.pop b 
     firstD <= sndD && sndD <= thirdD
 
 let updateDiscovered originalMap updates =  
     updates |> Set.fold (fun accMap (key,value) -> Map.add value key accMap) originalMap
 
 let updateFrontier R updates =  
-    updates |> Set.fold (fun q dn -> PriorityQueue.insert dn q) R 
+    updates |> Set.fold (fun q dn -> PQ.insert dn q) R 
 
 let closerOrUndiscovered explored ((dist,n):DistanceNode) = 
     match Map.tryFind n explored with
@@ -52,7 +54,7 @@ let adjacent u e =
 
 let relax adjacent (d_u: int) explored = 
     adjacent 
-      |> Set.map (fun u_v -> d_u + u_v.w_u_v, u_v.v)
+      |> Set.map (fun u_v -> d_u + u_v.ω_u_v, u_v.v)
       |> Set.filter (fun dn -> closerOrUndiscovered explored dn) 
 
 //https://web.engr.oregonstate.edu/~glencora/wiki/uploads/dijkstra-proof.pdf
@@ -60,14 +62,14 @@ let relax adjacent (d_u: int) explored =
 [<TailCall>]
 let dijkstra edges n =  
    let rec innerDijkstra R explored =  
-        match (PriorityQueue.tryPop R) with
+        match (PQ.tryPop R) with
             | None  -> explored 
             | Some ((d_v,u), R') ->  
                 let adjacent = adjacent u edges
                 let relaxed = relax adjacent d_v explored
                 innerDijkstra (updateFrontier R' relaxed) 
                               (updateDiscovered explored relaxed)
-   let pq = PriorityQueue.empty false |> PriorityQueue.insert (0, n)
+   let pq = PQ.empty false |> PQ.insert (0, n)
    innerDijkstra pq (Map.ofList [n, 0]) 
 
 let startNode = {Id = 1}
@@ -77,7 +79,7 @@ let vertexCount = int romeData.[0]
 let edgeCount = int romeData.[1]
 let romeEdges = romeData.[2..]
                     |> Array.map (fun line -> line.Split(' '))
-                    |> Array.map (fun line -> { u = {Id = int line.[0]}; v = {Id = int line.[1]}; w_u_v = int line.[2] })
+                    |> Array.map (fun line -> { u = {Id = int line.[0]}; v = {Id = int line.[1]}; ω_u_v = int line.[2] })
                     |> Set.ofArray
                
 [<Xunit.Fact>]
