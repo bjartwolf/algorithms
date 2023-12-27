@@ -2,7 +2,7 @@
 open FsCheck.Xunit
 open FSharpx.Collections
 
-type Node = { Id : int}
+type Node = { n : int}
 type Nodes = Node Set
 
 module PQ = PriorityQueue
@@ -13,22 +13,22 @@ type Edge = {
     ω_uv : int;
 }
 type Edges = Edge Set
-let exampleNodes = Set.ofList [ {Id = 1}; {Id = 2}; {Id = 3}; {Id = 4}; {Id = 5}; {Id = 6} ]
-let exampleEdges = Set.ofList [ { u = {Id = 1}; v = {Id = 2}; ω_uv = 7 }; 
-                                { u = {Id = 1}; v = {Id = 3}; ω_uv = 9 }; 
-                                { u = {Id = 2}; v = {Id = 3}; ω_uv = 10 }; 
-                                { u = {Id = 2}; v = {Id = 4}; ω_uv = 15 }; 
-                                { u = {Id = 3}; v = {Id = 4}; ω_uv = 11 }; 
-                                { u = {Id = 3}; v = {Id = 6}; ω_uv = 2 }; 
-                                { u = {Id = 4}; v = {Id = 5}; ω_uv = 6 }; 
-                                { u = {Id = 5}; v = {Id = 6}; ω_uv = 9 } ]
+let exampleNodes = Set.ofList [ {n = 1}; {n = 2}; {n = 3}; {n = 4}; {n = 5}; {n = 6} ]
+let exampleEdges = Set.ofList [ { u = {n = 1}; v = {n = 2}; ω_uv = 7 }; 
+                                { u = {n = 1}; v = {n = 3}; ω_uv = 9 }; 
+                                { u = {n = 2}; v = {n = 3}; ω_uv = 10 }; 
+                                { u = {n = 2}; v = {n = 4}; ω_uv = 15 }; 
+                                { u = {n = 3}; v = {n = 4}; ω_uv = 11 }; 
+                                { u = {n = 3}; v = {n = 6}; ω_uv = 2 }; 
+                                { u = {n = 4}; v = {n = 5}; ω_uv = 6 }; 
+                                { u = {n = 5}; v = {n = 6}; ω_uv = 9 } ]
 
-type DistanceNode = int * Node
+type d_Node = int * Node
 
 [<Property>]
-let ``PriorityQueue test with distanceNodes `` (x: DistanceNode)
-                                               (y: DistanceNode)
-                                               (z: DistanceNode) = 
+let ``PriorityQueue test with distanceNodes `` (x: d_Node)
+                                               (y: d_Node)
+                                               (z: d_Node) = 
     let pq = PQ.empty false 
              |> PQ.insert x 
              |> PQ.insert y
@@ -38,13 +38,13 @@ let ``PriorityQueue test with distanceNodes `` (x: DistanceNode)
     let ((thirdD, _),_) = PQ.pop b 
     firstD <= sndD && sndD <= thirdD
 
-let updateDiscovered originalMap updates =  
-    updates |> Set.fold (fun accMap (key,value) -> Map.add value key accMap) originalMap
+let updateExplored explored updates =  
+    updates |> Set.fold (fun accMap (key,value) -> Map.add value key accMap) explored
 
-let updateFrontier R updates =  
-    updates |> Set.fold (fun q dn -> PQ.insert dn q) R 
+let updateQ Q updates =  
+    updates |> Set.fold (fun q dn -> PQ.insert dn q) Q 
 
-let closerOrUndiscovered explored ((dist,n):DistanceNode) = 
+let closerOrUndiscovered explored ((dist,n):d_Node) = 
     match Map.tryFind n explored with
         | Some existingDist -> dist < existingDist
         | None -> true
@@ -65,34 +65,34 @@ let dijkstra edges n =
         match (PQ.tryPop Q) with
             | None  -> explored 
             | Some ((d_u,u), Q') ->  
-                let relaxed = adjacent u edges 
-                                |> relax d_u explored 
-                innerDijkstra (updateFrontier Q' relaxed) 
-                              (updateDiscovered explored relaxed)
+                let relaxed: d_Node Set = adjacent u edges 
+                                            |> relax d_u explored 
+                innerDijkstra (updateQ Q' relaxed) 
+                              (updateExplored explored relaxed)
    let pq = PQ.empty false |> PQ.insert (0, n)
    innerDijkstra pq (Map.ofList [n, 0]) 
 
-let startNode = {Id = 1}
+let startNode = {n = 1}
 
 let romeData = System.IO.File.ReadAllLines("rome99.txt")
 let vertexCount = int romeData.[0]
 let edgeCount = int romeData.[1]
 let romeEdges = romeData.[2..]
                     |> Array.map (fun line -> line.Split(' '))
-                    |> Array.map (fun line -> { u = {Id = int line.[0]}; v = {Id = int line.[1]}; ω_uv = int line.[2] })
+                    |> Array.map (fun line -> { u = {n = int line.[0]}; v = {n = int line.[1]}; ω_uv = int line.[2] })
                     |> Set.ofArray
                
 [<Xunit.Fact>]
 let ``Dijkstra test`` () = 
     let result = dijkstra exampleEdges startNode
-    let expected = Map.ofList [ ({Id = 1}, 0); ({Id = 2}, 7); ({Id = 3}, 9); ({Id = 4}, 20); ({Id = 5}, 26); ({Id = 6}, 11) ]
+    let expected = Map.ofList [ ({n = 1}, 0); ({n = 2}, 7); ({n = 3}, 9); ({n = 4}, 20); ({n = 5}, 26); ({n = 6}, 11) ]
     Xunit.Assert.Equal<Map<Node,int>>(expected, result)
 
 [<EntryPoint>]
 let main argv = 
     dijkstra exampleEdges startNode |> printfn "Dijstra %A"
-    dijkstra romeEdges ({Id = 0}) |> printfn "Dijstra Rome %A"
-    for edge in (dijkstra romeEdges {Id = 0}) do
+    dijkstra romeEdges ({n = 0}) |> printfn "Dijstra Rome %A"
+    for edge in (dijkstra romeEdges {n = 0}) do
         printfn "%A" edge
     0 
 
