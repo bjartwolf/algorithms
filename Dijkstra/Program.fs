@@ -44,15 +44,15 @@ let updateExplored explored updates =
 let updateQ Q updates =  
     updates |> Set.fold (fun q dn -> PQ.insert dn q) Q 
 
-let closerOrUndiscovered explored ((dist,n):d_Node) = 
-    match Map.tryFind n explored with
-        | Some existingDist -> dist < existingDist
-        | None -> true
 
 let adjacent u e = 
     e |> Set.filter (fun edge -> edge.u = u)
 
 let relax (d_u: int) explored vs = 
+    let closerOrUndiscovered explored ((dist,n):d_Node) = 
+        match Map.tryFind n explored with
+            | Some existingDist -> dist < existingDist
+            | None -> true
     vs 
       |> Set.map (fun v -> d_u + v.ω_uv, v.v)
       |> Set.filter (fun dn -> closerOrUndiscovered explored dn) 
