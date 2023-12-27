@@ -62,18 +62,19 @@ let relax (d_u: int) explored vs =
 
 // Using notation from https://www-student.cse.buffalo.edu/~atri/cse331/support/notation/shortest-path.html
 // Somewhat different in my book
-// d' is the best known upper bound on known nodes at any times, d' u would give upper bound to u
-// R is the region to explore, R' is the updated region to explore
+// d' is the map from Node to best known upper bound on known nodes at any time,
+// d' u would give upper bound to u
+// R is the region to explore, R' is the updated region to explore after popping the smallest element
 // d_u is the known distance to node u
 // s is the source node
-// Es is E, the set of all edges
+// Ε is the set of all edges in the Graph.
 [<TailCall>]
-let dijkstra Es s =  
+let dijkstra Ε s =  
    let rec innerDijkstra R d' =  
         match (PQ.tryPop R) with
             | None  -> d' 
             | Some ((d_u,u), R') ->  
-                let relaxed: d_Node Set = adjacent u Es 
+                let relaxed: d_Node Set = adjacent u Ε 
                                             |> relax d_u d' 
                 innerDijkstra (updatePQWithSet R' relaxed) 
                               (updateMapWithSet d' relaxed)
