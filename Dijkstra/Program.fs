@@ -60,18 +60,25 @@ let relax (d_u: int) explored vs =
 
 //https://web.engr.oregonstate.edu/~glencora/wiki/uploads/dijkstra-proof.pdf
 
+// Using notation from https://www-student.cse.buffalo.edu/~atri/cse331/support/notation/shortest-path.html
+// Somewhat different in my book
+// d' is the best known upper bound on known nodes at any times, d' u would give upper bound to u
+// R is the region to explore, R' is the updated region to explore
+// d_u is the known distance to node u
+// s is the source node
+// Es is E, the set of all edges
 [<TailCall>]
-let dijkstra edges n =  
-   let rec innerDijkstra Q explored =  
-        match (PQ.tryPop Q) with
-            | None  -> explored 
-            | Some ((d_u,u), Q') ->  
-                let relaxed: d_Node Set = adjacent u edges 
-                                            |> relax d_u explored 
-                innerDijkstra (updatePQWithSet Q' relaxed) 
-                              (updateMapWithSet explored relaxed)
-   let pq = PQ.empty false |> PQ.insert (0, n)
-   innerDijkstra pq (Map.ofList [n, 0]) 
+let dijkstra Es s =  
+   let rec innerDijkstra R d' =  
+        match (PQ.tryPop R) with
+            | None  -> d' 
+            | Some ((d_u,u), R') ->  
+                let relaxed: d_Node Set = adjacent u Es 
+                                            |> relax d_u d' 
+                innerDijkstra (updatePQWithSet R' relaxed) 
+                              (updateMapWithSet d' relaxed)
+   let pq = PQ.empty false |> PQ.insert (0, s)
+   innerDijkstra pq (Map.ofList [s, 0]) 
 
 let s = {n = 1}
 
